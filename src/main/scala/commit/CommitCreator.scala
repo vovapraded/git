@@ -8,6 +8,7 @@ import walker.DirectoryWalker
 
 import java.nio.file.{Files, Path}
 import java.security.MessageDigest
+import java.time.LocalDateTime
 
 object CommitCreator {
   var treeForFiles: Map[String,Path] = Map[String,Path]() // храним по хешу путь
@@ -18,7 +19,7 @@ object CommitCreator {
     for (e <- exceptions ){
       MyConsole.println(e.getMessage)
     }
-     val  commit =  Commit( treeForFiles, listEmptyDirectories )
+     val  commit =  Commit( LocalDateTime.now(),treeForFiles, listEmptyDirectories )
     CommitSerializer.serializeCommit(name,commit)
   }
   private def makeBlob(path:Path):Unit = {

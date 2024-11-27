@@ -12,9 +12,12 @@ object CommandExecutor {
     try {
       // Создаём команду на основе входного параметра
       val cmd: Command = command match {
-        case "init" => new InitCommand()
+        case "init" => new InitCommand
         case "commit" => new CommitCommand(arg)
         case "rollback" => new RollBackCommand(arg)
+        case "push" => new PushCommand(arg)
+        case "pull" => new PullCommand(arg)
+        case "info" => new InfoCommand
         case _ => throw new IllegalArgumentException(s"Unknown command: $command", null)
       }
       cmd.execute()
