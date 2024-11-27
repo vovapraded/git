@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Main-Class: main
+Specification-Title: github
+Specification-Version: 0.1.0-SNAPSHOT
+Specification-Vendor: github
+Implementation-Title: github
+Implementation-Version: 0.1.0-SNAPSHOT
+Implementation-Vendor: github
+Implementation-Vendor-Id: github
