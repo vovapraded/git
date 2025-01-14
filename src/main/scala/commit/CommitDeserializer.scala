@@ -15,7 +15,7 @@ import java.nio.file.{Path, Paths}
 
 implicit val pathDecoder: Decoder[Path] = new Decoder[Path] {
     final def apply(c: HCursor): Decoder.Result[Path] =
-      c.as[String].map(s => Paths.get(s)) // Преобразует строку в Path
+      c.as[String].map(s => Constants.currentDir.resolve(Paths.get(s))) // Преобразует строку в Path
   }
 
 implicit val mapStringToPathDecoder: Decoder[Map[String, Path]] = Decoder.decodeMap[String, Path]

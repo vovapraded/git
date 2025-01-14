@@ -19,7 +19,7 @@ object CommitCreator {
     for (e <- exceptions ){
       MyConsole.println(e.getMessage)
     }
-     val  commit =  Commit( LocalDateTime.now(),treeForFiles, listEmptyDirectories )
+     val  commit =  Commit( LocalDateTime.now(),Constants.currentDir.getFileName.toString,treeForFiles, listEmptyDirectories )
     CommitSerializer.serializeCommit(name,commit)
   }
   private def makeBlob(path:Path):Unit = {
@@ -29,13 +29,13 @@ object CommitCreator {
     if (!treeForFiles.contains(hashString)) {
       BlobSerializer.serialize(hashString, fileContent)
     }
-    treeForFiles = treeForFiles + (hashString -> path)
+    treeForFiles = treeForFiles + (hashString -> Constants.currentDir.relativize(path))
 
   }
     // Создаем и возвращаем Blob
   private def addDirectoryInTree(path:Path):Unit = {
     if ( !Files.list(path).iterator().hasNext) {
-      listEmptyDirectories = path +: listEmptyDirectories
+      listEmptyDirectories = Constants.currentDir.relativize(path) +: listEmptyDirectories
     }
   }
 

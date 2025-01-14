@@ -1,40 +1,66 @@
 package pull
 
+import console.MyConsole
 import constant.Constants
 import exceptions.UnexpectedException
-import org.apache.commons.vfs2.{Selectors, VFS}
-import util.VFSUtil
+import org.springframework.integration.sftp.session.SftpSession
+import sftp.{SftpDetails, SftpUtil}
+import util.FileUtil
 
-import java.io.File
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths, StandardCopyOption, StandardOpenOption}
 
 object Puller {
-  def pull(sftpUrl: String): Unit = {
-    val localDir = Constants.myGitDir
-    try {
-      // Создаем менеджер файловой системы
-      val manager = VFS.getManager
-      // Получаем ссылку на удаленную директорию
-      val remoteDir = VFSUtil.resolveFileWithOptions( sftpUrl, manager)
+  val localDir: Path = Constants.myGitDir
 
-      // Работаем с файлами в удаленной директории
-      val remoteFiles = remoteDir.getChildren
+  // Функция для скачивания файлов с удаленного SFTP-сервера с использованием Spring Integration
+  private def downloadFiles(session: SftpSession, details: SftpDetails, path: Path): Unit = {
+    try {
+      val remoteDirPath = Paths.get(details.path, Constants.currentDir.getFileName.toString)
+      // Получаем список файлов в удаленной директории
+      val remoteFiles = session.list(remoteDirPath.toString)
 
       // Копируем файлы, которых нет в локальной директории
       remoteFiles.foreach { remoteFile =>
-        val localFile =  Path.of(localDir.toString, remoteFile.getName.getBaseName.toString)
+        val fileName = remoteFile.getFilename
 
-        // Проверяем, существует ли файл локально
-        if (!Files.exists(localFile)) {
-          manager.resolveFile("file://" + localFile.toString).copyFrom(remoteFile, Selectors.SELECT_SELF )
-          println(s"Copied ${remoteFile.getName.getBaseName} to local directory")
+        // Пропускаем скрытые файлы (начинаются с точки)
+        if (!fileName.startsWith(".")) {
+          val localFile = path.resolve(fileName)
+
+          // Проверяем, существует ли файл локально
+          if (!Files.exists(localFile)) {
+            // Загружаем файл, если он не существует
+            println(s"Copying $fileName to local directory...")
+            session.read(remoteDirPath.resolve(fileName).toString, Files.newOutputStream(localFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE))
+            println(s"Copied $fileName to local directory")
+          } else {
+            println(s"File $fileName already exists locally, skipping.")
+          }
         } else {
-          println(s"File ${remoteFile.getName.getBaseName} already exists locally, skipping.")
+          println(s"Skipping hidden file: $fileName")
         }
       }
     } catch {
       case e: Exception => throw new UnexpectedException(e.getMessage, e)
     }
   }
+  def pull(sftpUrl: String): Unit = {
+    FileUtil.createDirectory(Constants.myGitDir) match {
+      case Right(_) =>
+        MyConsole.println(s"Директория .myGit успешно создана")
+      // Дальше делаем что-то с коммитом
+      case Left(ignored) =>
+    }
+    // Получаем SFTP-сессию и детали
+    val sftpSessionResult = SftpUtil.getSftpSession(sftpUrl)
 
+    // Проверяем результат создания сессии
+    sftpSessionResult match {
+      case Left(error) =>
+        println(s"Error: ${error.getMessage}")
+      case Right((session, sftpDetails)) =>
+        // Загружаем файлы, если сессия успешно создана
+        downloadFiles(session, sftpDetails, localDir)
+    }
+  }
 }

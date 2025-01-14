@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 
 case class Commit(
  time: LocalDateTime, // храним временную метку
+ name:String,
  treeForFiles: Map[String, Path] = Map[String,Path](), // храним по хешу название + путь
  listEmptyDirectories: List[Path] = List[Path]() 
 )

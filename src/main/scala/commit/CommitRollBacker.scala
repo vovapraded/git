@@ -61,6 +61,12 @@ object CommitRollBacker {
       dirPath =>
         FileUtil.createDirectoryRecursively(dirPath)
     )
+    val result = FileUtil.renameDirectory(Constants.currentDir, commit.name)
+    result match {
+      case Right(_) => println("Directory renamed successfully.")
+      case Left(error) => println(s"Error occurred: ${error.getMessage}")
+    }
+
   }
 
   private def clearVariables(): Unit = {

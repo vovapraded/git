@@ -47,7 +47,15 @@ object FileUtil {
         throw new FileException(s"Ошибка при перемещении файла: ${ex.getMessage}") // Повторно выбрасываем исключение, если нужно
     }
     }
-
+  def createDirectory(dir:Path): Either[String, Unit] = {
+    // Создаем путь к директории .git
+    if (!Files.exists(dir)) {
+      Files.createDirectory(dir)
+      Right(())
+    } else {
+      Left(s"Директория уже была инициализированна")
+    }
+  }
   def deleteDirectoryIfEmpty(dirPath: Path): Boolean = {
     try {
       if (Files.isDirectory(dirPath) && Files.list(dirPath).findFirst().isEmpty) {
@@ -71,4 +79,21 @@ object FileUtil {
           throw  new FileException(s"Ошибка при создании директории: ${ex.getMessage}")
       }
     }
+
+  def renameDirectory(currentDir:Path,newName: String): Either[Throwable, Unit] = {
+    // Получаем родительскую директорию
+    val parentDir: Path = currentDir.getParent
+
+    // Создаем новый путь с новым именем папки
+    val renamedDir: Path = parentDir.resolve(newName)
+
+    try {
+      // Переименовываем папку в пределах той же директории
+      Files.move(currentDir, renamedDir) // Если они в одной и той же директории, это переименование
+      Right(()) // Возвращаем успешный результат
+    } catch {
+      case e: Exception =>
+        Left(e) // Возвращаем ошибку, если что-то пошло не так
+    }
+  }
 }
