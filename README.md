@@ -7,7 +7,7 @@
 sudo bash -c 'echo -e "#!/bin/bash\njava -jar <Путь до программы>/github.jar \"\$@\"" > /usr/local/bin/mygit && chmod +x /usr/local/bin/mygit && echo \"Команда mygit создана и готова к использованию!\"'
 ```
 
-Для использования push и pull расположите приватный беспарольный ssh ключ mygit от сервера в ~/.ssh
+Для использования push и pull пароль должен быть указан в url
 ## Доступные команды:
 - info
 - init
